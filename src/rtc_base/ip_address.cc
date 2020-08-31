@@ -15,6 +15,7 @@
 #include <netinet/in_systm.h>
 #endif
 #ifndef __native_client__
+#include <sys/types.h>
 #include <netinet/ip.h>
 #endif
 #include <netdb.h>
