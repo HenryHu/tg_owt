@@ -10,7 +10,7 @@ function(init_target target_name) # init_target(my_target folder_name)
     elseif (APPLE)
         target_compile_features(${target_name} PUBLIC cxx_std_14)
     else()
-        target_compile_features(${target_name} PUBLIC cxx_std_20)
+        target_compile_features(${target_name} PUBLIC cxx_std_17)
     endif()
     if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         set_target_properties(${target_name} PROPERTIES
