@@ -53,6 +53,9 @@ class UnitBase {
   constexpr bool operator==(const Unit_T& other) const {
     return value_ == other.value_;
   }
+  constexpr bool operator!=(const Unit_T& other) const {
+    return value_ != other.value_;
+  }
   constexpr bool operator<=(const Unit_T& other) const {
     return value_ <= other.value_;
   }
