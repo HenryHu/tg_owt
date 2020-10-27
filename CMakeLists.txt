@@ -19,7 +19,7 @@ else()
 endif()
 
 project(tg_owt
-    LANGUAGES C CXX
+    LANGUAGES C CXX ASM
     DESCRIPTION "WebRTC build for Telegram"
     HOMEPAGE_URL "https://github.com/desktop-app/tg_owt.git"
 )
@@ -51,24 +51,40 @@ endif()
 add_library(tg_owt STATIC)
 init_target(tg_owt)
 
-target_link_libraries(tg_owt
-PUBLIC
-    tg_owt::libwebrtcbuild
-PRIVATE
-    tg_owt::libabsl
-    tg_owt::libopenh264
-    tg_owt::libpffft
-    tg_owt::librnnoise
-    tg_owt::libsrtp
-    tg_owt::libvpx
-    tg_owt::libvpx_mmx
-    tg_owt::libvpx_sse2
-    tg_owt::libvpx_ssse3
-    tg_owt::libvpx_sse4
-    tg_owt::libvpx_avx
-    tg_owt::libvpx_avx2
-    tg_owt::libyuv
-)
+if (is_x86 OR is_x64)
+    target_link_libraries(tg_owt
+    PUBLIC
+        tg_owt::libwebrtcbuild
+    PRIVATE
+        tg_owt::libabsl
+        tg_owt::libopenh264
+        tg_owt::libpffft
+        tg_owt::librnnoise
+        tg_owt::libsrtp
+        tg_owt::libvpx
+        tg_owt::libvpx_mmx
+        tg_owt::libvpx_sse2
+        tg_owt::libvpx_ssse3
+        tg_owt::libvpx_sse4
+        tg_owt::libvpx_avx
+        tg_owt::libvpx_avx2
+        tg_owt::libyuv
+    )
+else()
+    target_link_libraries(tg_owt
+    PUBLIC
+        tg_owt::libwebrtcbuild
+    PRIVATE
+        tg_owt::libabsl
+        tg_owt::libopenh264
+        tg_owt::libpffft
+        tg_owt::librnnoise
+        tg_owt::libsrtp
+        tg_owt::libusrsctp
+        tg_owt::libvpx
+        tg_owt::libyuv
+    )
+endif()
 
 target_sources(tg_owt
 PRIVATE
@@ -80,12 +96,18 @@ if (NOT WIN32 AND NOT APPLE)
     target_link_libraries(tg_owt PRIVATE tg_owt::libevent)
 endif()
 if (APPLE)
-    target_link_libraries(tg_owt PRIVATE tg_owt::libsdkmacos)
+    target_link_libraries(tg_owt PUBLIC tg_owt::libsdkmacos)
 endif()
 
 link_openssl(tg_owt)
 link_ffmpeg(tg_owt)
 link_opus(tg_owt)
+
+if (UNIX AND NOT APPLE)
+    link_libalsa(tg_owt)
+    link_libpulse(tg_owt)
+    link_dl(tg_owt)
+endif()
 
 nice_target_sources(tg_owt ${webrtc_loc}
 PRIVATE
@@ -655,7 +677,6 @@ PRIVATE
     modules/audio_coding/codecs/isac/empty.cc
     modules/audio_coding/codecs/isac/fix/source/audio_decoder_isacfix.cc
     modules/audio_coding/codecs/isac/fix/source/audio_encoder_isacfix.cc
-    modules/audio_coding/codecs/isac/fix/source/isacfix.c
     modules/audio_coding/codecs/isac/fix/source/arith_routines.c
     modules/audio_coding/codecs/isac/fix/source/arith_routines_hist.c
     modules/audio_coding/codecs/isac/fix/source/arith_routines_logist.c
@@ -665,13 +686,18 @@ PRIVATE
     modules/audio_coding/codecs/isac/fix/source/decode_plc.c
     modules/audio_coding/codecs/isac/fix/source/encode.c
     modules/audio_coding/codecs/isac/fix/source/entropy_coding.c
+    modules/audio_coding/codecs/isac/fix/source/entropy_coding_neon.c
+    modules/audio_coding/codecs/isac/fix/source/filterbanks_neon.c
+    modules/audio_coding/codecs/isac/fix/source/filters_neon.c
     modules/audio_coding/codecs/isac/fix/source/fft.c
     modules/audio_coding/codecs/isac/fix/source/filterbank_tables.c
     modules/audio_coding/codecs/isac/fix/source/filterbanks.c
     modules/audio_coding/codecs/isac/fix/source/filters.c
     modules/audio_coding/codecs/isac/fix/source/initialize.c
+    modules/audio_coding/codecs/isac/fix/source/isacfix.c
     modules/audio_coding/codecs/isac/fix/source/lattice.c
     modules/audio_coding/codecs/isac/fix/source/lattice_c.c
+    modules/audio_coding/codecs/isac/fix/source/lattice_neon.c
     modules/audio_coding/codecs/isac/fix/source/lpc_masking_model.c
     modules/audio_coding/codecs/isac/fix/source/lpc_tables.c
     modules/audio_coding/codecs/isac/fix/source/pitch_estimator.c
@@ -682,6 +708,7 @@ PRIVATE
     modules/audio_coding/codecs/isac/fix/source/pitch_lag_tables.c
     modules/audio_coding/codecs/isac/fix/source/spectrum_ar_model_tables.c
     modules/audio_coding/codecs/isac/fix/source/transform.c
+    modules/audio_coding/codecs/isac/fix/source/transform_neon.c
     modules/audio_coding/codecs/isac/fix/source/transform_tables.c
     modules/audio_coding/codecs/isac/main/source/audio_decoder_isac.cc
     modules/audio_coding/codecs/isac/main/source/audio_encoder_isac.cc
@@ -927,6 +954,7 @@ PRIVATE
     modules/audio_processing/aec_dump/null_aec_dump_factory.cc
     modules/audio_processing/aecm/aecm_core.cc
     modules/audio_processing/aecm/aecm_core_c.cc
+    modules/audio_processing/aecm/aecm_core_neon.cc
     modules/audio_processing/aecm/echo_control_mobile.cc
     modules/audio_processing/agc/agc.cc
     modules/audio_processing/agc/agc_manager_direct.cc
@@ -1041,6 +1069,7 @@ PRIVATE
     modules/audio_processing/utility/ooura_fft.cc
     modules/audio_processing/utility/ooura_fft.h
     modules/audio_processing/utility/ooura_fft_tables_common.h
+    modules/audio_processing/utility/ooura_fft_neon.cc
     modules/audio_processing/utility/ooura_fft_sse2.cc
     modules/audio_processing/utility/ooura_fft_tables_neon_sse2.h
     modules/audio_processing/vad/gmm.cc
@@ -1338,6 +1367,7 @@ PRIVATE
     modules/video_coding/codecs/vp9/vp9_impl.cc
     modules/video_processing/util/denoiser_filter.cc
     modules/video_processing/util/denoiser_filter_c.cc
+    modules/video_processing/util/denoiser_filter_neon.cc
     modules/video_processing/util/denoiser_filter_sse2.cc
     modules/video_processing/util/noise_estimation.cc
     modules/video_processing/util/skin_detection.cc
@@ -1371,8 +1401,10 @@ PRIVATE
     common_audio/audio_converter.cc
     common_audio/audio_util.cc
     common_audio/channel_buffer.cc
-    common_audio/fir_filter_c.cc
     common_audio/fir_filter_factory.cc
+    common_audio/fir_filter_c.cc
+    common_audio/fir_filter_neon.cc
+    common_audio/fir_filter_neon.h
     common_audio/fir_filter_sse.cc
     common_audio/fir_filter_sse.h
     common_audio/real_fourier.cc
@@ -1380,6 +1412,7 @@ PRIVATE
     common_audio/resampler/push_resampler.cc
     common_audio/resampler/push_sinc_resampler.cc
     common_audio/resampler/resampler.cc
+    common_audio/resampler/sinc_resampler_neon.cc
     common_audio/resampler/sinc_resampler_sse.cc
     common_audio/resampler/sinc_resampler.cc
     common_audio/resampler/sinusoidal_linear_chirp_source.cc
@@ -1397,8 +1430,10 @@ PRIVATE
     common_audio/signal_processing/filter_ar_fast_q12.c
     common_audio/signal_processing/copy_set_operations.c
     common_audio/signal_processing/cross_correlation.c
+    common_audio/signal_processing/cross_correlation_neon.c
     common_audio/signal_processing/division_operations.c
     common_audio/signal_processing/downsample_fast.c
+    common_audio/signal_processing/downsample_fast_neon.c
     common_audio/signal_processing/energy.c
     common_audio/signal_processing/filter_ar.c
     common_audio/signal_processing/filter_ma_fast_q12.c
@@ -1408,6 +1443,7 @@ PRIVATE
     common_audio/signal_processing/levinson_durbin.c
     common_audio/signal_processing/lpc_to_refl_coef.c
     common_audio/signal_processing/min_max_operations.c
+    common_audio/signal_processing/min_max_operations_neon.c
     common_audio/signal_processing/randomization_functions.c
     common_audio/signal_processing/real_fft.c
     common_audio/signal_processing/refl_coef_to_lpc.c
@@ -1699,6 +1735,40 @@ if (NOT WIN32)
     )
 endif()
 
+if ((NOT is_x86) AND (NOT is_x64))
+    remove_target_sources(tg_owt ${webrtc_loc}
+        common_audio/fir_filter_sse.cc
+        common_audio/fir_filter_sse.h
+        common_audio/resampler/sinc_resampler_sse.cc
+        modules/audio_processing/utility/ooura_fft_sse2.cc
+        modules/video_processing/util/denoiser_filter_sse2.cc
+    )
+endif()
+
+if (arm_use_neon)
+    target_compile_definitions(tg_owt
+    PRIVATE
+        WEBRTC_HAS_NEON
+    )
+else()
+    remove_target_sources(tg_owt ${webrtc_loc}
+        common_audio/fir_filter_neon.cc
+        common_audio/fir_filter_neon.h
+        common_audio/resampler/sinc_resampler_neon.cc
+        common_audio/signal_processing/cross_correlation_neon.c
+        common_audio/signal_processing/downsample_fast_neon.c
+        common_audio/signal_processing/min_max_operations_neon.c
+        modules/audio_coding/codecs/isac/fix/source/entropy_coding_neon.c
+        modules/audio_coding/codecs/isac/fix/source/filterbanks_neon.c
+        modules/audio_coding/codecs/isac/fix/source/filters_neon.c
+        modules/audio_coding/codecs/isac/fix/source/lattice_neon.c
+        modules/audio_coding/codecs/isac/fix/source/transform_neon.c
+        modules/audio_processing/utility/ooura_fft_neon.cc
+        modules/video_processing/util/denoiser_filter_neon.cc
+        modules/audio_processing/aecm/aecm_core_neon.cc
+    )
+endif()
+
 if (APPLE)
     remove_target_sources(tg_owt ${webrtc_loc}
         rtc_base/socket.cc
@@ -1747,6 +1817,18 @@ elseif (APPLE)
     )
 endif()
 
+set(vpx_export)
+if (is_x86 OR is_x64)
+    set(vpx_export
+        libvpx_mmx
+        libvpx_sse2
+        libvpx_ssse3
+        libvpx_sse4
+        libvpx_avx
+        libvpx_avx2
+    )
+endif()
+
 export(
 TARGETS
     tg_owt
@@ -1756,12 +1838,7 @@ TARGETS
     librnnoise
     libsrtp
     libvpx
-    libvpx_mmx
-    libvpx_sse2
-    libvpx_ssse3
-    libvpx_sse4
-    libvpx_avx
-    libvpx_avx2
+    ${vpx_export}
     libwebrtcbuild
     libyuv
     ${platform_export}
