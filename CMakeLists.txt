@@ -109,6 +109,8 @@ if (UNIX AND NOT APPLE)
     link_dl(tg_owt)
 endif()
 
+target_include_directories(tg_owt BEFORE PRIVATE "src/third_party/abseil-cpp")
+
 nice_target_sources(tg_owt ${webrtc_loc}
 PRIVATE
     rtc_base/async_invoker.cc
