@@ -65,6 +65,17 @@ PRIVATE
     components/video_codec/helpers.h
     components/video_codec/nalu_rewriter.cc
     components/video_codec/nalu_rewriter.h
+    components/renderer/opengl/RTCShader.h
+    components/renderer/opengl/RTCShader.mm
+    components/renderer/opengl/RTCDefaultShader.h
+    components/renderer/opengl/RTCDefaultShader.mm
+    components/renderer/opengl/RTCI420TextureCache.h
+    components/renderer/opengl/RTCI420TextureCache.mm
+    components/renderer/metal/RTCMTLI420Renderer.h
+    components/renderer/metal/RTCMTLI420Renderer.mm
+    components/renderer/metal/RTCMTLRenderer+Private.h
+    components/renderer/metal/RTCMTLRenderer.h
+    components/renderer/metal/RTCMTLRenderer.mm
     base/RTCCodecSpecificInfo.h
     base/RTCEncodedImage.h
     base/RTCEncodedImage.m
@@ -74,8 +85,8 @@ PRIVATE
     base/RTCMacros.h
     base/RTCMutableI420Buffer.h
     base/RTCMutableYUVPlanarBuffer.h
-    base/RTCRtpFragmentationHeader.h
-    base/RTCRtpFragmentationHeader.m
+    # base/RTCRtpFragmentationHeader.h
+    # base/RTCRtpFragmentationHeader.m
     base/RTCVideoCapturer.h
     base/RTCVideoCapturer.m
     base/RTCVideoCodecInfo.h
@@ -101,6 +112,8 @@ PRIVATE
     helpers/RTCDispatcher.h
     helpers/RTCDispatcher.m
     helpers/scoped_cftyperef.h
+    native/api/network_monitor_factory.h
+    native/api/network_monitor_factory.mm
     native/api/video_capturer.h
     native/api/video_capturer.mm
     native/api/video_decoder_factory.h
@@ -137,8 +150,8 @@ PRIVATE
     api/video_codec/RTCVideoEncoderVP9.mm
     api/peerconnection/RTCEncodedImage+Private.h
     api/peerconnection/RTCEncodedImage+Private.mm
-    api/peerconnection/RTCRtpFragmentationHeader+Private.h
-    api/peerconnection/RTCRtpFragmentationHeader+Private.mm
+    # api/peerconnection/RTCRtpFragmentationHeader+Private.h
+    # api/peerconnection/RTCRtpFragmentationHeader+Private.mm
     api/peerconnection/RTCVideoCodecInfo+Private.h
     api/peerconnection/RTCVideoCodecInfo+Private.mm
     api/peerconnection/RTCVideoEncoderSettings+Private.h
@@ -256,8 +269,12 @@ PRIVATE
 
 target_include_directories(libsdkmacos
 PUBLIC
-    ${webrtc_loc}
-    ${libsdkmacos_loc}
-    ${libsdkmacos_loc}/base
-    ${libsdkmacos_loc}/components/video_codec
+    $<BUILD_INTERFACE:${webrtc_loc}>
+    $<BUILD_INTERFACE:${libsdkmacos_loc}>
+    $<BUILD_INTERFACE:${libsdkmacos_loc}/base>
+    $<BUILD_INTERFACE:${libsdkmacos_loc}/components/video_codec>
+    $<INSTALL_INTERFACE:${webrtc_includedir}>
+    $<INSTALL_INTERFACE:${webrtc_includedir}/sdk/objc>
+    $<INSTALL_INTERFACE:${webrtc_includedir}/sdk/objc/base>
+    $<INSTALL_INTERFACE:${webrtc_includedir}/sdk/objc/components/video_codec>
 )

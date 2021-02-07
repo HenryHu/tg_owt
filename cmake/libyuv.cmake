@@ -59,6 +59,7 @@ PRIVATE
     source/scale_argb.cc
     source/scale_common.cc
     source/scale_gcc.cc
+    source/scale_uv.cc
     source/scale_win.cc
     source/video_common.cc
 
@@ -126,7 +127,8 @@ endif()
 
 target_include_directories(libyuv
 PUBLIC
-    ${libyuv_loc}/include
+    $<BUILD_INTERFACE:${libyuv_loc}/include>
+    $<INSTALL_INTERFACE:${webrtc_includedir}/third_party/libyuv/include>
 )
 
 target_compile_definitions(libyuv

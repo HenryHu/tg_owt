@@ -35,6 +35,10 @@ elseif (APPLE)
         list(APPEND include_directories
             ${libvpx_loc}/source/config/mac/x64
         )
+    elseif (is_aarch64)
+        list(APPEND include_directories
+            ${libvpx_loc}/source/config/linux/arm64
+        )
     else()
         message(FATAL_ERROR "Unsupported CPU architecture on Apple devices.")
     endif()
@@ -68,6 +72,11 @@ else()
     set(ASM_SUFFIX ".asm.S")
 endif()
 
+foreach(dir ${include_directories})
+    string(REPLACE ${libvpx_loc} ${webrtc_includedir}/third_party/libvpx install_include_dir ${dir})
+    list(APPEND install_include_directories ${install_include_dir})
+endforeach()
+
 function(add_sublibrary postfix)
     add_library(libvpx_${postfix} OBJECT)
     init_feature_target(libvpx_${postfix} ${postfix})
@@ -75,6 +84,8 @@ function(add_sublibrary postfix)
     target_include_directories(libvpx_${postfix}
     PRIVATE
         ${include_directories}
+        "$<BUILD_INTERFACE:${include_directories}>"
+        "$<INSTALL_INTERFACE:${install_include_directories}>"
     )
     set(sources_list ${ARGV})
     list(REMOVE_AT sources_list 0)
@@ -295,6 +306,8 @@ PRIVATE
     source/libvpx/vp9/encoder/vp9_encoder.h
     source/libvpx/vp9/encoder/vp9_ethread.c
     source/libvpx/vp9/encoder/vp9_ethread.h
+    source/libvpx/vp9/encoder/vp9_ext_ratectrl.c
+    source/libvpx/vp9/encoder/vp9_ext_ratectrl.h
     source/libvpx/vp9/encoder/vp9_extend.c
     source/libvpx/vp9/encoder/vp9_extend.h
     source/libvpx/vp9/encoder/vp9_firstpass.h
@@ -725,5 +738,6 @@ endif()
 
 target_include_directories(libvpx
 PUBLIC
-    ${include_directories}
+    "$<BUILD_INTERFACE:${include_directories}>"
+    "$<INSTALL_INTERFACE:${install_include_directories}>"
 )
