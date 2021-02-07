@@ -145,6 +145,9 @@ if (UNIX AND NOT APPLE)
 endif()
 
 target_include_directories(tg_owt BEFORE PRIVATE "src/third_party/abseil-cpp")
+target_include_directories(tg_owt BEFORE PRIVATE "src/third_party/libvpx/source/libvpx")
+target_include_directories(tg_owt BEFORE PRIVATE "src/third_party/libyuv/include")
+target_include_directories(tg_owt BEFORE PRIVATE "src")
 
 function(add_sublibrary postfix)
     add_library(tg_owt_${postfix} OBJECT)
