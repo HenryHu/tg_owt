@@ -126,7 +126,7 @@ else()
 endif()
 
 target_include_directories(libyuv
-PUBLIC
+BEFORE PUBLIC
     $<BUILD_INTERFACE:${libyuv_loc}/include>
     $<INSTALL_INTERFACE:${webrtc_includedir}/third_party/libyuv/include>
 )
